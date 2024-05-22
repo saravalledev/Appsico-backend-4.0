@@ -3,9 +3,9 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "dev": "bun --watch src/index.ts",
-    "build": "bunx prisma migrate deploy && bunx prisma generate && bun build src/index.ts",
-    "start": "NODE_ENV=production bun src/index.ts",
+    "dev": "bun --bun --watch src/index.ts",
+    "build": "NIXPACKS_LIBS=openssl bunx prisma migrate deploy && bunx prisma generate && bun build src/index.ts",
+    "start": "NODE_ENV=production bun --bun src/index.ts",
     "test": "bun test"
   },
   "prettier": {
