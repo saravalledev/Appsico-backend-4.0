@@ -1,0 +1,203 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  id String @id @unique @default("") @db.VarChar(26)
+
+  type TypeUserEnum @default(patient)
+
+  image            String?
+  name             String
+  email            String    @unique
+  emailValidatedAt DateTime? @map("email_validated_at")
+  phone            String    @unique @db.VarChar(13)
+  document         String?   @unique @db.VarChar(11)
+  registration     String?   @unique @db.VarChar(8)
+  birth            DateTime?
+
+  password String
+
+  profile Profiles?
+
+  following Users[] @relation("followers", map: "followers")
+  followers Users[] @relation("followers", map: "followers")
+
+  conversations Conversations[]
+  messages      Messages[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Profiles {
+  id   String @id @unique @default("") @map("user_id") @db.VarChar(26)
+  user Users  @relation(fields: [id], references: [id], onDelete: Cascade)
+
+  bio         String             @db.Text
+  specialties Specialties[]
+  approach    Approach[]
+  service     TypeServicesEnum[]
+
+  socials  Socials[]
+  contacts Contacts[]
+
+  address         Address?  @relation("address", map: "address")
+  serviceLocation Address[] @relation("service_location", map: "service_location")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("profiles")
+}
+
+model Contacts {
+  id String @id @unique @default("") @db.VarChar(26)
+
+  profileId String   @map("profile_id") @db.VarChar(26)
+  profile   Profiles @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  value       String    @unique @db.VarChar(13)
+  validatedAt DateTime? @map("validated_at")
+
+  whatsapp Boolean @default(false)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("contacts")
+}
+
+model Socials {
+  id String @id @unique @default("") @db.VarChar(26)
+
+  profileId String   @map("profile_id") @db.VarChar(26)
+  profile   Profiles @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  type        TypeSocialEnum
+  url         String         @unique @db.Text
+  validatedAt DateTime?      @map("validated_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("socials")
+}
+
+model Address {
+  id String @id @unique @default("") @db.VarChar(26)
+
+  userId String?   @unique @map("user_id") @db.VarChar(26)
+  user   Profiles? @relation("address", fields: [userId], references: [id], onDelete: Cascade, map: "address")
+
+  profileId String?   @map("profile_id") @db.VarChar(26)
+  profile   Profiles? @relation("service_location", fields: [profileId], references: [id], onDelete: Cascade, map: "service_location")
+
+  street       String
+  number       Int
+  complement   String?
+  neighborhood String
+  city         String
+  state        String
+  stateCode    String? @default("") @db.VarChar(2)
+  zipCode      String  @map("zip_code") @db.VarChar(8)
+  country      String
+  countryCode  String? @default("") @db.VarChar(2)
+  longitude    Float
+  latitude     Float
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("address")
+}
+
+model Specialties {
+  id String @id @unique @default("") @db.VarChar(26)
+
+  name String
+
+  profile Profiles[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("specialties")
+}
+
+model Approach {
+  id String @id @unique @default("") @db.VarChar(26)
+
+  name String
+
+  profile Profiles[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("approach")
+}
+
+model Conversations {
+  id String @id @unique @default("") @db.VarChar(26)
+
+  users Users[]
+
+  messages Messages[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("conversations")
+}
+
+model Messages {
+  id   String          @id @unique @default("") @db.VarChar(26)
+  type TypeMessageEnum @default(image)
+
+  conversationId String        @map("conversation_id") @db.VarChar(26)
+  conversation   Conversations @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  senderId String @map("sender_id") @db.VarChar(26)
+  sender   Users  @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  content String @db.Text
+
+  viewers String[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("messages")
+}
+
+enum TypeUserEnum {
+  patient
+  professional
+}
+
+enum TypeServicesEnum {
+  social
+  covenant
+  private
+}
+
+enum TypeMessageEnum {
+  text
+  image
+  video
+}
+
+enum TypeSocialEnum {
+  instagram
+  x
+  facebook
+}

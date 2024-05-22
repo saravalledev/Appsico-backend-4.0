@@ -1,0 +1,32 @@
+{
+  "name": "appsico",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "build": "bun build src/index.ts",
+    "start": "NODE_ENV=production bun src/index.ts",
+    "test": "bun test"
+  },
+  "prettier": {
+    "singleQuote": true,
+    "jsxSingleQuote": true
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^8.4.1",
+    "@types/bun": "latest",
+    "prisma": "^5.14.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@elysiajs/cors": "^1.0.2",
+    "@prisma/client": "^5.14.0",
+    "@react-email/components": "0.0.17",
+    "elysia": "^1.0.20",
+    "react-email": "2.1.2",
+    "resend": "^3.2.0",
+    "ulidx": "^2.3.0"
+  }
+}
