@@ -4,18 +4,32 @@ import { t } from 'elysia';
 
 export const findMany = new Http().use(context).get(
   '/',
-  async ({ query, db }) => {
-    const take = query.limit ? Number(query.limit) : 30;
+  async ({ query: { limit, cursor, validated, search, state, city }, db }) => {
+    const take = limit ? Number(limit) : 30;
+
+    const isMoreProfile = state || city;
 
     const where: Prisma.UsersWhereInput = {
       type: 'professional',
-      profile: {
-        isNot: query.validated === 'true' ? null : undefined,
-      },
-      name: query.search
+      profile: !validated
+        ? isMoreProfile
+          ? {
+              address:
+                state || city
+                  ? {
+                      state,
+                      city,
+                    }
+                  : undefined,
+            }
+          : undefined
+        : {
+            isNot: null
+          },
+      name: search
         ? {
             mode: 'insensitive',
-            search: query.search.replaceAll(' ', '&'),
+            search: search.replaceAll(' ', '&'),
           }
         : undefined,
     };
@@ -23,9 +37,9 @@ export const findMany = new Http().use(context).get(
     const [data, previous, total] = await db.$transaction([
       db.users.findMany({
         where,
-        cursor: query.cursor
+        cursor: cursor
           ? {
-              id: query.cursor,
+              id: cursor,
             }
           : undefined,
         take: take + 1,
@@ -59,24 +73,24 @@ export const findMany = new Http().use(context).get(
           },
         },
         orderBy: {
-          id: 'asc',
+          id: 'desc',
         },
       }),
       db.users.findMany({
         where: {
           ...where,
-          id: query.cursor
-            ? {
-                lt: query.cursor,
-              }
-            : undefined,
         },
-        take: take,
+        cursor: cursor
+          ? {
+              id: cursor,
+            }
+          : undefined,
+        take: take + 1,
         select: {
           id: true,
         },
         orderBy: {
-          id: 'desc',
+          id: 'asc',
         },
       }),
       db.users.count({
@@ -92,7 +106,7 @@ export const findMany = new Http().use(context).get(
 
     return {
       next: nextId,
-      previous: query.cursor
+      previous: cursor
         ? previousId === nextId
           ? undefined
           : previousId
@@ -149,12 +163,16 @@ export const findMany = new Http().use(context).get(
       total: t.Number(),
     }),
     query: t.Optional(
-      t.Object({
-        cursor: t.Optional(t.String()),
-        limit: t.Optional(t.String()),
-        search: t.Optional(t.String()),
-        validated: t.Optional(t.String()),
-      })
+      t.Partial(
+        t.Object({
+          cursor: t.String(),
+          limit: t.String(),
+          search: t.String(),
+          validated: t.String(),
+          state: t.String(),
+          city: t.String(),
+        })
+      )
     ),
   }
 );
