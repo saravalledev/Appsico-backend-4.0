@@ -1,6 +1,7 @@
 import Http, { context } from '@/service/http';
 import { TypeMessageEnum } from '@prisma/client';
 import { t, type Static } from 'elysia';
+import { ulid } from 'ulidx';
 
 const SchemaBody = t.Object({
   id: t.String(),
@@ -12,15 +13,11 @@ const SchemaBody = t.Object({
 const SchemaResponse = t.Object({
   id: t.String(),
   type: t.Enum(TypeMessageEnum),
-  sender: t.Object({
-    id: t.String(),
-    name: t.String(),
-    image: t.Optional(t.String()),
-  }),
-  message: t.String(),
+  sender: t.String(),
+  content: t.String(),
   created_at: t.Date(),
 });
-type TypeResponse = Static<typeof SchemaResponse>;
+type TypeRequest = Static<typeof SchemaResponse>;
 
 export const connectById = new Http({
   prefix: '/chat',
@@ -34,8 +31,19 @@ export const connectById = new Http({
       ws.unsubscribe(`chat.${ws.data.params.id}`);
     },
     async message(ws, message) {
-      const data = await ws.data.db.messages.create({
+      const id = ulid();
+      const request: TypeRequest = {
+        ...message,
+        id: id,
+        created_at: new Date(),
+      };
+
+      ws.publish(`chat.${ws.data.params.id}`, request);
+      ws.send(request);
+
+      await ws.data.db.messages.create({
         data: {
+          id: id,
           conversationId: message.id,
           type: message.type,
           senderId: message.sender,
@@ -56,21 +64,6 @@ export const connectById = new Http({
           createdAt: true,
         },
       });
-
-      const response: TypeResponse = {
-        id: data.id,
-        type: data.type,
-        sender: {
-          id: data.sender.id,
-          name: data.sender.name,
-          image: data.sender.image || undefined,
-        },
-        message: data.content,
-        created_at: data.createdAt,
-      };
-
-      ws.publish(`chat-${ws.data.params.id}`, response);
-      ws.send(response);
     },
     body: SchemaBody,
     response: SchemaResponse,

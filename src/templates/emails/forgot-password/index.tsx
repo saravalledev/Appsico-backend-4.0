@@ -1,14 +1,14 @@
 import {
-    Body,
-    Button,
-    Container,
-    Head,
-    Html,
-    Img,
-    Link,
-    Preview,
-    Section,
-    Text,
+  Body,
+  Button,
+  Container,
+  Head,
+  Html,
+  Img,
+  Link,
+  Preview,
+  Section,
+  Text,
 } from '@react-email/components';
 
 interface TemplateForgotPasswordProps {
@@ -16,8 +16,8 @@ interface TemplateForgotPasswordProps {
   resetPasswordLink?: string;
 }
 
-const baseUrl = process.env.VERCEL_URL
-  ? `https://${process.env.VERCEL_URL}`
+const baseUrl = Bun.env.VERCEL_URL
+  ? `https://${Bun.env.VERCEL_URL}`
   : '';
 
 export default function TemplateForgotPassword({

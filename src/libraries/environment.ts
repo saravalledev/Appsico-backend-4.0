@@ -7,8 +7,8 @@ const environmentSchema = t.Object({
 });
 
 const environment = TypeCompiler.Compile(environmentSchema).Decode({
-  port: Number(process.env.PORT) || 3001,
-  resend: process.env.RESEND_API,
+  port: Number(Bun.env.PORT) || 3001,
+  resend: Bun.env.RESEND_API,
 });
 
 export default environment;

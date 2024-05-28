@@ -1,4 +1,5 @@
 import Http, { context } from '@/service/http';
+import type { Prisma } from '@prisma/client';
 import { t } from 'elysia';
 import { last } from './last';
 
@@ -9,20 +10,27 @@ export const slots = new Http({
   .get(
     '/:user',
     async ({ params: { user }, db }) => {
-      const data = await db.conversations.findMany({
-        where: {
-          users: {
-            some: {
-              id: user,
-            },
-          },
-          messages: {
-            some: {},
+      const where: Prisma.ConversationsWhereInput = {
+        users: {
+          some: {
+            id: user,
           },
         },
+        messages: {
+          some: {
+            content: {},
+          },
+        },
+      };
+
+      const data = await db.conversations.findMany({
+        where,
         distinct: 'id',
         select: {
           id: true,
+        },
+        orderBy: {
+          updatedAt: 'desc',
         },
       });
 

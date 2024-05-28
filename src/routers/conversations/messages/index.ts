@@ -6,11 +6,7 @@ const SchemaResponse = t.Array(
   t.Object({
     id: t.String(),
     type: t.Enum(TypeMessageEnum),
-    sender: t.Object({
-      id: t.String(),
-      name: t.String(),
-      image: t.Optional(t.String()),
-    }),
+    sender: t.String(),
     content: t.String(),
     created_at: t.Date(),
   })
@@ -41,8 +37,6 @@ export const messages = new Http().use(context).get(
           sender: {
             select: {
               id: true,
-              name: true,
-              image: true,
             },
           },
           createdAt: true,
@@ -92,11 +86,7 @@ export const messages = new Http().use(context).get(
         id: item.id,
         type: item.type,
         content: item.content,
-        sender: {
-          id: item.sender.id,
-          name: item.sender.name,
-          image: item.sender.image || undefined,
-        },
+        sender: item.sender.id,
         created_at: item.createdAt,
       })),
       total,
@@ -114,7 +104,7 @@ export const messages = new Http().use(context).get(
     }),
     query: t.Optional(
       t.Object({
-        limit: t.Optional(t.String()),
+        limit: t.Optional(t.Number()),
         cursor: t.Optional(t.String()),
       })
     ),

@@ -18,6 +18,9 @@ export const states = new Http({
           state: true,
         },
         distinct: 'state',
+        orderBy: {
+          state: 'asc',
+        },
       });
 
       return response.flatMap((item) => item.state);
@@ -34,14 +37,19 @@ export const states = new Http({
       const response = await db.address.findMany({
         where: {
           profile: {
-            isNot: null,
+            user: {
+              type: 'professional',
+            },
           },
-          state,
+          state: state,
         },
         select: {
           city: true,
         },
         distinct: 'city',
+        orderBy: {
+          city: 'asc',
+        },
       });
 
       return response.flatMap((item) => item.city);

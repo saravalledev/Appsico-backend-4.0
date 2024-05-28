@@ -8,9 +8,6 @@ export const last = new Http().use(context).get(
     const data = await db.conversations.findUnique({
       where: {
         id: conversation,
-        messages: {
-          some: {},
-        },
       },
       select: {
         id: true,
@@ -50,12 +47,14 @@ export const last = new Http().use(context).get(
         name: item.name,
         image: item.image || undefined,
       })),
-      messages: {
-        id: data.messages[0].id,
-        type: data.messages[0].type,
-        content: data.messages[0].content,
-        created_at: data.messages[0].createdAt,
-      },
+      message: !!data.messages.length
+        ? {
+            id: data.messages[0].id,
+            type: data.messages[0].type,
+            content: data.messages[0].content,
+            created_at: data.messages[0].createdAt,
+          }
+        : undefined,
       created_at: data.createdAt,
     };
   },
@@ -74,12 +73,14 @@ export const last = new Http().use(context).get(
             image: t.Optional(t.String()),
           })
         ),
-        messages: t.Object({
-          id: t.String(),
-          type: t.Enum(TypeMessageEnum),
-          content: t.String(),
-          created_at: t.Date(),
-        }),
+        message: t.Optional(
+          t.Object({
+            id: t.String(),
+            type: t.Enum(TypeMessageEnum),
+            content: t.String(),
+            created_at: t.Date(),
+          })
+        ),
         created_at: t.Date(),
       }),
       404: t.Object({

@@ -1,6 +1,7 @@
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["fullTextSearch"]
+  binaryTargets   = ["native", "debian-openssl-3.0.x"]
 }
 
 datasource db {
@@ -45,7 +46,7 @@ model Profiles {
   bio         String             @db.Text
   specialties Specialties[]
   approach    Approach[]
-  service     TypeServicesEnum[]
+  services    TypeServicesEnum[]
 
   socials  Socials[]
   contacts Contacts[]
@@ -101,16 +102,17 @@ model Address {
   profileId String?   @map("profile_id") @db.VarChar(26)
   profile   Profiles? @relation("service_location", fields: [profileId], references: [id], onDelete: Cascade, map: "service_location")
 
+  displayName  String  @map("display_name")
   street       String
   number       Int
   complement   String?
   neighborhood String
   city         String
   state        String
-  stateCode    String? @default("") @db.VarChar(2)
+  stateCode    String  @default("") @map("state_code") @db.VarChar(2)
   zipCode      String  @map("zip_code") @db.VarChar(8)
   country      String
-  countryCode  String? @default("") @db.VarChar(2)
+  countryCode  String  @default("") @map("country_code") @db.VarChar(2)
   longitude    Float
   latitude     Float
 
